@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	if err := tracelib.InitializeTracing("Service4", "http://localhost:14268/api/traces"); err != nil {
+	if err := tracelib.InitializeTracing("Service4", "http://jaeger:14268/api/traces"); err != nil {
 		log.Fatalf("Failed to initialize tracing: %v", err)
 	}
 

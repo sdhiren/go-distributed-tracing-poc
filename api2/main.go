@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	if err := tracelib.InitializeTracing("Service2", "http://localhost:14268/api/traces"); err != nil {
+	if err := tracelib.InitializeTracing("Service2", "http://jaeger:14268/api/traces"); err != nil {
 		log.Fatalf("Failed to initialize tracing: %v", err)
 	}
 
@@ -29,7 +29,7 @@ func main() {
 
 		// defer span.End()
 
-		resp, err := tracelib.HTTPClient(c.Request.Context(), "GET", "http://localhost:8082/ding", nil)
+		resp, err := tracelib.HTTPClient(c.Request.Context(), "GET", "http://go-api3:8082/ding", nil)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return

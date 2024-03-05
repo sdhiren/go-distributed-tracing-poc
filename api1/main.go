@@ -11,10 +11,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
+	"golang.org/x/exp/slog"
 )
 
 func main() {
-	if err := tracelib.InitializeTracing("Service1", "http://localhost:14268/api/traces"); err != nil {
+	if err := tracelib.InitializeTracing("Service1", "http://jaeger:14268/api/traces"); err != nil {
 		log.Fatalf("Failed to initialize tracing: %v", err)
 	}
 
@@ -22,22 +23,10 @@ func main() {
 	r.Use(TraceMiddleware())
 	r.GET("/ping", func(c *gin.Context) {
 
-		// start a new span for the incoming request
-		// spanName := fmt.Sprintf("%s %s", c.Request.Method, c.Request.URL.Path)
-		// ctx := otel.GetTextMapPropagator().Extract(c.Request.Context(), propagation.HeaderCarrier(c.Request.Header))
-		// ctx, span := tracelib.StartSpanFromContext(ctx, spanName)
-		// defer span.End()
 
+		slog.InfoContext(c.Request.Context(),"Request received", "path", c.Request.URL.Path)
 
-		// create a separate request/response span
-		// requestResponseSpanName := fmt.Sprintf("%s %s %s", c.Request.Method, c.Request.URL.Path, "request | response" )
-		// _, span2 := tracelib.StartSpanFromContext(ctx, requestResponseSpanName)
-		// defer span2.End()
-
-		// adding request in the request/response span
-		// tracelib.AddRequestToSpan(span2, c.Request, nil)
-
-		resp, err := tracelib.HTTPClient(c.Request.Context(), "GET", "http://localhost:8081/pong", nil)
+		resp, err := tracelib.HTTPClient(c.Request.Context(), "GET", "http://go-api2:8081/pong", nil)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -47,10 +36,7 @@ func main() {
 		json.Unmarshal(resp, &response)
 		fmt.Println("Response from service2: ", response)
 
-		// adding response in the request/response span
-		// tracelib.AddResponseToSpan(span2, response, nil)
-
-		resp2, err2 := tracelib.HTTPClient(c.Request.Context(), "GET", "http://localhost:8083/dong", nil)
+		resp2, err2 := tracelib.HTTPClient(c.Request.Context(), "GET", "http://go-api4:8083/dong", nil)
 		if err2 != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return

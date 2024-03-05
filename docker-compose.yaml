@@ -1,0 +1,57 @@
+version: '3.8'
+services:
+  go-api1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - mynetwork
+    command: "./api1/main"
+
+  go-api2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    networks:
+      - mynetwork
+    command: "./api2/main"
+
+  go-api3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    networks:
+      - mynetwork
+    command: "./api3/main"
+
+  go-api4:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    networks:
+      - mynetwork
+    command: "./api4/main"
+    
+
+  jaeger:
+    image: jaegertracing/opentelemetry-all-in-one:latest
+    container_name: jaeger  
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+    depends_on:
+      - go-api1
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
