@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"tracing/logging"
 	"tracing/tracelib"
 
 	"github.com/gin-gonic/gin"
@@ -22,22 +23,20 @@ func main() {
 	r.Use(TraceMiddleware())
 	r.GET("/pong", func(c *gin.Context) {
 
-		// spanName := fmt.Sprintf("%s %s", c.Request.Method, c.Request.URL.Path)
-
-		// ctx := otel.GetTextMapPropagator().Extract(c, propagation.HeaderCarrier(c.Request.Header))
-		// _, span := tracelib.StartSpanFromContext(ctx, spanName)
-
-		// defer span.End()
+		logger := logging.GetFileLogger(c)
+		logger.Info("call to api3 started")
 
 		resp, err := tracelib.HTTPClient(c.Request.Context(), "GET", "http://go-api3:8082/ding", nil)
 		if err != nil {
+			logger.Error("error occured: ", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
+		logger.Info("call to api3 finished")
+
 		var response tracelib.Response
 		json.Unmarshal(resp, &response)
-		fmt.Println("Response from service3: ", response)
 		c.JSON(http.StatusOK, response)
 	})
 

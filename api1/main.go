@@ -30,13 +30,19 @@ func main() {
 	r.GET("/ping", func(c *gin.Context) {
 
 		defaultLogger := logging.GetFileLogger(c)
-		defaultLogger.Info("this is a test message")
+		defaultLogger.Info("inside api 1")
+		
+		defaultLogger.Info("call to api 2 started")
 
 		resp, err := tracelib.HTTPClient(c.Request.Context(), "GET", "http://go-api2:8081/pong", nil)
 		if err != nil {
+			defaultLogger.Error("error occured while calling api 2 :", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
+		}else {
+			defaultLogger.Info("call to api 2 finished")
 		}
+
 
 		var response tracelib.Response
 		unMarshallErr := json.Unmarshal(resp, &response)
@@ -44,16 +50,22 @@ func main() {
 			fmt.Print("error occured: ", unMarshallErr)
 		}
 
+		defaultLogger.Info("call to api 4 started")
 		resp2, err2 := tracelib.HTTPClient(c.Request.Context(), "GET", "http://go-api4:8083/dong", nil)
 		if err2 != nil {
+			defaultLogger.Error("error occured while calling api 4 :", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
+		}else {
+			defaultLogger.Info("call to api 4 finished")
 		}
 
 		var response2 tracelib.Response
 		json.Unmarshal(resp2, &response2)
 
 		response.Message = response.Message + " : " + response2.Message
+
+		defaultLogger.Info("exiting api 1")
 
 		c.JSON(http.StatusOK, response)
 	})

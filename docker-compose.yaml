@@ -10,7 +10,9 @@ services:
       - mynetwork
     command: "./api1/main"
     environment:
-      - LOG_FILE=app.log
+      - LOG_FILE=/app/logs/app.log
+    volumes:
+      - shared-logs:/app/logs
 
   go-api2:
     build:
@@ -21,6 +23,10 @@ services:
     networks:
       - mynetwork
     command: "./api2/main"
+    environment:
+      - LOG_FILE=/app/logs/app.log
+    volumes:
+      - shared-logs:/app/logs
 
   go-api3:
     build:
@@ -31,6 +37,10 @@ services:
     networks:
       - mynetwork
     command: "./api3/main"
+    environment:
+      - LOG_FILE=/app/logs/app.log
+    volumes:
+      - shared-logs:/app/logs
 
   go-api4:
     build:
@@ -41,8 +51,11 @@ services:
     networks:
       - mynetwork
     command: "./api4/main"
+    environment:
+      - LOG_FILE=/app/logs/app.log
+    volumes:
+      - shared-logs:/app/logs
     
-
   jaeger:
     image: jaegertracing/opentelemetry-all-in-one:latest
     container_name: jaeger  
@@ -57,3 +70,6 @@ services:
 networks:
   mynetwork:
     driver: bridge
+
+volumes:
+  shared-logs:

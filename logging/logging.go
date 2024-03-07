@@ -29,6 +29,19 @@ func (c *CustomLogger) Info(msg string, args ...any) {
 	c.logger.Info(msg, args...)
 }
 
+func (c *CustomLogger) Error(msg string, args ...any) {
+	span := trace.SpanFromContext(c.context.Request.Context())
+	spanId := span.SpanContext().SpanID().String()
+	traceId := span.SpanContext().TraceID().String()
+	var attributes []attribute.KeyValue
+
+	attributes = append(attributes, attribute.String("traceId", string(traceId)), attribute.String("spanId", spanId), attribute.String("time", time.Now().String()), attribute.String("level", slog.LevelInfo.String()))
+	span.AddEvent(msg, trace.WithAttributes(attributes...), trace.WithTimestamp(time.Now()))
+	// c.logger.InfoContext(c.context.Request.Context(), msg, args...)
+	c.logger.Error(msg, args...)
+}
+
+
 func GetLogger(cotext *gin.Context) *slog.Logger {
 	LOG_FILE := os.Getenv("LOG_FILE")
 	file, err := os.OpenFile(LOG_FILE, os.O_CREATE | os.O_WRONLY | os.O_APPEND, 0666)
@@ -69,18 +82,13 @@ func GetDefaultLogger(context *gin.Context) *CustomLogger {
 	customLogger.context = context
 	customLogger.logger = defaultLogger
 
-	fmt.Println("Custome Logger :", customLogger)
-
 	return customLogger
 }
 
-func GetFileLogger(context *gin.Context) *slog.Logger {
+func GetFileLogger(context *gin.Context) *CustomLogger  {
 	span := trace.SpanFromContext(context.Request.Context())
 	spanId := span.SpanContext().SpanID().String()
 	traceId := span.SpanContext().TraceID().String()
-
-	// span.
-
 
 	LOG_FILE := os.Getenv("LOG_FILE")
 	fmt.Println("Log file: ",LOG_FILE)
@@ -102,5 +110,9 @@ func GetFileLogger(context *gin.Context) *slog.Logger {
 	slog.String("method_name", "methodName"),
 	slog.String("class_name", "className"),)
 
-	return defaultLogger
+	customLogger := &CustomLogger{}
+	customLogger.context = context
+	customLogger.logger = defaultLogger
+
+	return customLogger
 }
