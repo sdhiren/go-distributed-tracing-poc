@@ -5,26 +5,32 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
+	"os"
+	"time"
+
 	"net/http"
+	"tracing/logging"
 	"tracing/tracelib"
 
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
-	"golang.org/x/exp/slog"
 )
 
 func main() {
+
 	if err := tracelib.InitializeTracing("Service1", "http://jaeger:14268/api/traces"); err != nil {
 		log.Fatalf("Failed to initialize tracing: %v", err)
 	}
 
 	r := gin.Default()
 	r.Use(TraceMiddleware())
+
 	r.GET("/ping", func(c *gin.Context) {
 
-
-		slog.InfoContext(c.Request.Context(),"Request received", "path", c.Request.URL.Path)
+		defaultLogger := logging.GetFileLogger(c)
+		defaultLogger.Info("this is a test message")
 
 		resp, err := tracelib.HTTPClient(c.Request.Context(), "GET", "http://go-api2:8081/pong", nil)
 		if err != nil {
@@ -33,8 +39,10 @@ func main() {
 		}
 
 		var response tracelib.Response
-		json.Unmarshal(resp, &response)
-		fmt.Println("Response from service2: ", response)
+		unMarshallErr := json.Unmarshal(resp, &response)
+		if unMarshallErr != nil {
+			fmt.Print("error occured: ", unMarshallErr)
+		}
 
 		resp2, err2 := tracelib.HTTPClient(c.Request.Context(), "GET", "http://go-api4:8083/dong", nil)
 		if err2 != nil {
@@ -44,7 +52,6 @@ func main() {
 
 		var response2 tracelib.Response
 		json.Unmarshal(resp2, &response2)
-		fmt.Println("Response from service4: ", response2)
 
 		response.Message = response.Message + " : " + response2.Message
 
@@ -52,6 +59,20 @@ func main() {
 	})
 
 	log.Fatal(r.Run(":8080"))
+}
+
+func testHandler() slog.Handler {
+	return slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		AddSource: false,
+		Level:     nil,
+		ReplaceAttr: func(_ []string, a slog.Attr) slog.Attr {
+			if a.Key == slog.TimeKey {
+				a.Value = slog.TimeValue(time.Time{})
+			}
+
+			return a
+		},
+	})
 }
 
 func TraceMiddleware() gin.HandlerFunc {
@@ -70,9 +91,7 @@ func TraceMiddleware() gin.HandlerFunc {
 		tracelib.AddRequestToSpan(span2, c.Request, nil)
 
         c.Set("span", span)
-        // c.Request = c.Request.WithContext(ctx)
         c.Request = c.Request.Clone(ctx)
-
 		blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
     	c.Writer = blw
         c.Next()

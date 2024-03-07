@@ -9,6 +9,8 @@ services:
     networks:
       - mynetwork
     command: "./api1/main"
+    environment:
+      - LOG_FILE=app.log
 
   go-api2:
     build:
