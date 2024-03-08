@@ -90,6 +90,9 @@ func GetFileLogger(context *gin.Context) *CustomLogger  {
 	spanId := span.SpanContext().SpanID().String()
 	traceId := span.SpanContext().TraceID().String()
 
+	// pc, _, _, _ := runtime.Caller(1)
+    // methodName := runtime.FuncForPC(pc).Name()
+
 	LOG_FILE := os.Getenv("LOG_FILE")
 	fmt.Println("Log file: ",LOG_FILE)
 	file, err := os.OpenFile(LOG_FILE, os.O_CREATE | os.O_WRONLY | os.O_APPEND, 0666)
