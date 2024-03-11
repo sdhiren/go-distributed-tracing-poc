@@ -20,44 +20,44 @@ func NewApiController1() *ApiController1{
 
 func (a *ApiController1) CallApi2(context *gin.Context) {
 
-	defaultLogger := logging.GetFileLogger(context)
-		defaultLogger.Info("inside api 1")
+	defaultLogger := logging.GetFileLogger(context).With("method_name", "CallApi2").With("class_anme", "ApiController1")
+	defaultLogger.Info("inside api 1")
 		
-		defaultLogger.Info("call to api 2 started")
+	defaultLogger.Info("call to api 2 started")
 
-		resp, err := tracelib.HTTPClient(context.Request.Context(), "GET", "http://go-api2:8081/pong", nil)
-		if err != nil {
-			defaultLogger.Error("error occured while calling api 2 :", err)
-			context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}else {
-			defaultLogger.Info("call to api 2 finished")
-		}
+	resp, err := tracelib.HTTPClient(context.Request.Context(), "GET", "http://go-api2:8081/pong", nil)
+	if err != nil {
+		defaultLogger.Error("error occured while calling api 2 :", err)
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}else {
+		defaultLogger.Info("call to api 2 finished")
+	}
 
 
-		var response tracelib.Response
-		unMarshallErr := json.Unmarshal(resp, &response)
-		if unMarshallErr != nil {
-			fmt.Print("error occured: ", unMarshallErr)
-		}
+	var response tracelib.Response
+	unMarshallErr := json.Unmarshal(resp, &response)
+	if unMarshallErr != nil {
+		fmt.Print("error occured: ", unMarshallErr)
+	}
 
-		defaultLogger.Info("call to api 4 started")
-		resp2, err2 := tracelib.HTTPClient(context.Request.Context(), "GET", "http://go-api4:8083/dong", nil)
-		if err2 != nil {
-			defaultLogger.Error("error occured while calling api 4 :", err)
-			context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}else {
-			defaultLogger.Info("call to api 4 finished")
-		}
+	defaultLogger.Info("call to api 4 started")
+	resp2, err2 := tracelib.HTTPClient(context.Request.Context(), "GET", "http://go-api4:8083/dong", nil)
+	if err2 != nil {
+		defaultLogger.Error("error occured while calling api 4 :", err)
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}else {
+		defaultLogger.Info("call to api 4 finished")
+	}
 
-		var response2 tracelib.Response
-		json.Unmarshal(resp2, &response2)
+	var response2 tracelib.Response
+	json.Unmarshal(resp2, &response2)
 
-		response.Message = response.Message + " : " + response2.Message
+	response.Message = response.Message + " : " + response2.Message
 
-		defaultLogger.Info("exiting api 1")
+	defaultLogger.Info("exiting api 1")
 
-		context.JSON(http.StatusOK, response)
+	context.JSON(http.StatusOK, response)
 
 }

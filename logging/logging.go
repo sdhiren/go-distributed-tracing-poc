@@ -41,6 +41,16 @@ func (c *CustomLogger) Error(msg string, args ...any) {
 	c.logger.Error(msg, args...)
 }
 
+func (c *CustomLogger) With(key string, value string) *CustomLogger {
+	
+	logger := c.logger
+	
+	logger = logger.With(slog.String(key, value))
+	c.logger = logger
+	return c
+
+}
+
 
 func GetLogger(cotext *gin.Context) *slog.Logger {
 	LOG_FILE := os.Getenv("LOG_FILE")
@@ -109,9 +119,7 @@ func GetFileLogger(context *gin.Context) *CustomLogger  {
 
 	
 	defaultLogger := logger.With(slog.String("trace_id", string(traceId)),
-	slog.String("span_id", spanId),
-	slog.String("method_name", "methodName"),
-	slog.String("class_name", "className"),)
+	slog.String("span_id", spanId),)
 
 	customLogger := &CustomLogger{}
 	customLogger.context = context
