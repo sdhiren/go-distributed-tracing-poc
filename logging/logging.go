@@ -42,13 +42,10 @@ func (c *CustomLogger) Error(msg string, args ...any) {
 }
 
 func (c *CustomLogger) With(key string, value string) *CustomLogger {
-	
 	logger := c.logger
-	
 	logger = logger.With(slog.String(key, value))
 	c.logger = logger
 	return c
-
 }
 
 

@@ -20,7 +20,7 @@ func NewApiController1() *ApiController1{
 
 func (a *ApiController1) CallApi2(context *gin.Context) {
 
-	defaultLogger := logging.GetFileLogger(context).With("method_name", "CallApi2").With("class_anme", "ApiController1")
+	defaultLogger := logging.GetFileLogger(context).With("method_name", "CallApi2").With("class_name", "ApiController1")
 	defaultLogger.Info("inside api 1")
 		
 	defaultLogger.Info("call to api 2 started")
