@@ -1,0 +1,17 @@
+version: '3'
+services:
+  influxdb:
+    image: influxdb
+    ports:
+      - "8083:8083"
+      - "8086:8086"
+      - "8090:8090"
+    environment:
+      INFLUXDB_DB: telegraf
+      INFLUXDB_USER: admin
+      INFLUXDB_USER_PASSWORD: admin
+    networks:
+      - mynetwork
+networks:
+  mynetwork:
+    name: mynetwork

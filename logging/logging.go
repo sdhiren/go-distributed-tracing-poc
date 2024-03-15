@@ -81,9 +81,10 @@ func GetDefaultLogger(context *gin.Context) *CustomLogger {
 
 	
 	defaultLogger := logger.With(slog.String("trace_id", string(traceId)),
-	slog.String("span_id", spanId),
-	slog.String("method_name", "methodName"),
-	slog.String("class_name", "className"),)
+								slog.String("span_id", spanId),
+								slog.String("method_name", "methodName"),
+								slog.String("class_name", "className"),
+							)
 
 	customLogger := &CustomLogger{}
 	customLogger.context = context
@@ -97,11 +98,7 @@ func GetFileLogger(context *gin.Context) *CustomLogger  {
 	spanId := span.SpanContext().SpanID().String()
 	traceId := span.SpanContext().TraceID().String()
 
-	// pc, _, _, _ := runtime.Caller(1)
-    // methodName := runtime.FuncForPC(pc).Name()
-
 	LOG_FILE := os.Getenv("LOG_FILE")
-	fmt.Println("Log file: ",LOG_FILE)
 	file, err := os.OpenFile(LOG_FILE, os.O_CREATE | os.O_WRONLY | os.O_APPEND, 0666)
 	if err != nil {
 		fmt.Println("error :", err)
@@ -115,8 +112,10 @@ func GetFileLogger(context *gin.Context) *CustomLogger  {
 	slog.SetDefault(logger)
 
 	
-	defaultLogger := logger.With(slog.String("trace_id", string(traceId)),
-	slog.String("span_id", spanId),)
+	defaultLogger := logger.With(
+								 slog.String("trace_id", string(traceId)),
+								 slog.String("span_id", spanId),
+								)
 
 	customLogger := &CustomLogger{}
 	customLogger.context = context

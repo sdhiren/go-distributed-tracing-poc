@@ -11,7 +11,7 @@ RUN go build -o ./api4/main ./api4
 EXPOSE 8080
 EXPOSE 8081
 EXPOSE 8082
-EXPOSE 8083
+EXPOSE 8084
 
 RUN chmod 755 ./start.sh
 
