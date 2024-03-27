@@ -15,6 +15,13 @@ type CustomLogger struct {
 	context *gin.Context
 }
 
+func NewCustomLogger(logger *slog.Logger, context *gin.Context) *CustomLogger {
+	return &CustomLogger{
+		logger: logger,
+		context: context,
+	}
+}
+
 func (c *CustomLogger) Info(msg string, args ...any) {
 	c.logger.Info(msg, args...)
 }
@@ -30,25 +37,11 @@ func (c *CustomLogger) With(key string, value string) *CustomLogger {
 	return c
 }
 
-
-func GetLogger(cotext *gin.Context) *slog.Logger {
-	LOG_FILE := os.Getenv("LOG_FILE")
-	file, err := os.OpenFile(LOG_FILE, os.O_CREATE | os.O_WRONLY | os.O_APPEND, 0666)
-	if err != nil {
-		fmt.Println("error :", err)
-	}
-	defer file.Close()
-
-	handlerOpts := &slog.HandlerOptions{		
-		Level:     slog.LevelDebug,		
-	}
-	logger := slog.New(slog.NewJSONHandler(file, handlerOpts))
-	slog.SetDefault(logger)
-
-	return logger
-}
-
 func GetDefaultLogger(context *gin.Context) *CustomLogger {
+	if context == nil {
+		return nil
+	}
+
 	span := trace.SpanFromContext(context.Request.Context())
 	spanId := span.SpanContext().SpanID().String()
 	traceId := span.SpanContext().TraceID().String()
@@ -68,11 +61,7 @@ func GetDefaultLogger(context *gin.Context) *CustomLogger {
 								slog.String("end_point", end_point),
 							  )
 
-	customLogger := &CustomLogger{}
-	customLogger.context = context
-	customLogger.logger = defaultLogger
-
-	return customLogger
+	return NewCustomLogger(defaultLogger, context)
 }
 
 func getLogLevel() slog.Level {
@@ -124,5 +113,23 @@ func GetFileLogger(context *gin.Context) *CustomLogger  {
 	customLogger.logger = defaultLogger
 
 	return customLogger
+}
+
+
+func GetLogger(cotext *gin.Context) *slog.Logger {
+	LOG_FILE := os.Getenv("LOG_FILE")
+	file, err := os.OpenFile(LOG_FILE, os.O_CREATE | os.O_WRONLY | os.O_APPEND, 0666)
+	if err != nil {
+		fmt.Println("error :", err)
+	}
+	defer file.Close()
+
+	handlerOpts := &slog.HandlerOptions{		
+		Level:     slog.LevelDebug,		
+	}
+	logger := slog.New(slog.NewJSONHandler(file, handlerOpts))
+	slog.SetDefault(logger)
+
+	return logger
 }
 
