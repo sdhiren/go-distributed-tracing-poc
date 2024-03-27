@@ -10,7 +10,7 @@ import (
 const (
 	logFilePath = "../app/app4.log"
 	maxFileSize = 1 << 30 // 1 GB
-	logEntry    = `{"time":"%s","level":"INFO","msg":"testing splunk indexing","trace_id":"ad29519f158159a4ebd15ca6813fskjd74","span_id":"e03c5defe36d9b24","method_name":"CallApi2","class_name":"ApiController1"}`
+	logEntry    = `{"time":"%s","level":"INFO","msg":"testing splunk retention policy ","trace_id":"ad29519f158159a4ebd15ca6813fskjd74","span_id":"e03c5defe36d9b24","method_name":"CallApi2","class_name":"ApiController1"}`
 )
 
 func main() {

@@ -3,12 +3,10 @@ package logging
 import (
 	"fmt"
 	"os"
-	"time"
 
 	"golang.org/x/exp/slog"
 
 	"github.com/gin-gonic/gin"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -18,26 +16,10 @@ type CustomLogger struct {
 }
 
 func (c *CustomLogger) Info(msg string, args ...any) {
-	span := trace.SpanFromContext(c.context.Request.Context())
-	spanId := span.SpanContext().SpanID().String()
-	traceId := span.SpanContext().TraceID().String()
-	var attributes []attribute.KeyValue
-
-	attributes = append(attributes, attribute.String("traceId", string(traceId)), attribute.String("spanId", spanId), attribute.String("time", time.Now().String()), attribute.String("level", slog.LevelInfo.String()))
-	span.AddEvent(msg, trace.WithAttributes(attributes...), trace.WithTimestamp(time.Now()))
-	// c.logger.InfoContext(c.context.Request.Context(), msg, args...)
 	c.logger.Info(msg, args...)
 }
 
 func (c *CustomLogger) Error(msg string, args ...any) {
-	span := trace.SpanFromContext(c.context.Request.Context())
-	spanId := span.SpanContext().SpanID().String()
-	traceId := span.SpanContext().TraceID().String()
-	var attributes []attribute.KeyValue
-
-	attributes = append(attributes, attribute.String("traceId", string(traceId)), attribute.String("spanId", spanId), attribute.String("time", time.Now().String()), attribute.String("level", slog.LevelInfo.String()))
-	span.AddEvent(msg, trace.WithAttributes(attributes...), trace.WithTimestamp(time.Now()))
-	// c.logger.InfoContext(c.context.Request.Context(), msg, args...)
 	c.logger.Error(msg, args...)
 }
 
@@ -71,26 +53,42 @@ func GetDefaultLogger(context *gin.Context) *CustomLogger {
 	spanId := span.SpanContext().SpanID().String()
 	traceId := span.SpanContext().TraceID().String()
 
-	fmt.Println("traceId: ", traceId)
+	end_point := context.Request.URL.Path
+	logLevel := getLogLevel()
 
 	handlerOpts := &slog.HandlerOptions{		
-		Level:     slog.LevelDebug,		
+		Level:     logLevel,
 	}
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, handlerOpts))
 	slog.SetDefault(logger)
-
 	
-	defaultLogger := logger.With(slog.String("trace_id", string(traceId)),
+	defaultLogger := logger.With(
+								slog.String("trace_id", traceId),
 								slog.String("span_id", spanId),
-								slog.String("method_name", "methodName"),
-								slog.String("class_name", "className"),
-							)
+								slog.String("end_point", end_point),
+							  )
 
 	customLogger := &CustomLogger{}
 	customLogger.context = context
 	customLogger.logger = defaultLogger
 
 	return customLogger
+}
+
+func getLogLevel() slog.Level {
+	log_level := os.Getenv("LOG_LEVEL")
+	var logLevel slog.Level
+	switch log_level {
+	case "DEBUG":
+		logLevel = slog.LevelDebug
+	case "INFO":
+		logLevel = slog.LevelInfo
+	case "WARN":
+		logLevel = slog.LevelWarn
+	case "ERROR":
+		logLevel = slog.LevelError
+	}
+	return logLevel
 }
 
 func GetFileLogger(context *gin.Context) *CustomLogger  {
@@ -105,8 +103,11 @@ func GetFileLogger(context *gin.Context) *CustomLogger  {
 	}
 	// defer file.Close()
 
+	end_point := context.Request.URL.Path
+	logLevel := getLogLevel()
+
 	handlerOpts := &slog.HandlerOptions{		
-		Level:     slog.LevelDebug,		
+		Level:     logLevel,
 	}
 	logger := slog.New(slog.NewJSONHandler(file, handlerOpts))
 	slog.SetDefault(logger)
@@ -115,6 +116,7 @@ func GetFileLogger(context *gin.Context) *CustomLogger  {
 	defaultLogger := logger.With(
 								 slog.String("trace_id", string(traceId)),
 								 slog.String("span_id", spanId),
+								 slog.String("end_point", end_point),
 								)
 
 	customLogger := &CustomLogger{}
@@ -123,3 +125,4 @@ func GetFileLogger(context *gin.Context) *CustomLogger  {
 
 	return customLogger
 }
+

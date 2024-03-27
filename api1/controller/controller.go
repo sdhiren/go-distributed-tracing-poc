@@ -20,8 +20,8 @@ func NewApiController1() *ApiController1{
 
 func (a *ApiController1) CallApi2(context *gin.Context) {
 
-	defaultLogger := logging.GetFileLogger(context).With("method_name", "CallApi2").With("class_name", "ApiController1")
-	defaultLogger.Info("inside api 1")
+	defaultLogger := logging.GetDefaultLogger(context).With("method_name", "CallApi2").With("class_name", "ApiController1")
+	defaultLogger.Info("inside api 1", "key", "value")
 		
 	defaultLogger.Info("call to api 2 started")
 
@@ -44,8 +44,8 @@ func (a *ApiController1) CallApi2(context *gin.Context) {
 	defaultLogger.Info("call to api 4 started")
 	resp2, err2 := tracelib.HTTPClient(context.Request.Context(), "GET", "http://go-api4:8083/dong", nil)
 	if err2 != nil {
-		defaultLogger.Error("error occured while calling api 4 :", err)
-		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		defaultLogger.Error("error occured while calling api 4 :", err2)
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err2.Error()})
 		return
 	}else {
 		defaultLogger.Info("call to api 4 finished")
@@ -53,11 +53,7 @@ func (a *ApiController1) CallApi2(context *gin.Context) {
 
 	var response2 tracelib.Response
 	json.Unmarshal(resp2, &response2)
-
 	response.Message = response.Message + " : " + response2.Message
-
 	defaultLogger.Info("exiting api 1")
-
 	context.JSON(http.StatusOK, response)
-
 }

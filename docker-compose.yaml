@@ -1,6 +1,6 @@
 version: '3.8'
 services:
-  go-api1:
+  go-api1:    
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,6 +11,7 @@ services:
     command: "./api1/main"
     environment:
       - LOG_FILE=/app/logs/app.log
+      - LOG_LEVEL=ERROR
     volumes:
       - shared-logs:/app/logs
 
@@ -67,45 +68,47 @@ services:
     networks:
       - mynetwork
   
-  splunk:
-    image: splunk/splunk:8.0
-    hostname: splunk
-    environment:
-      - SPLUNK_START_ARGS=--accept-license
-      - SPLUNK_ENABLE_LISTEN=9997
-      - SPLUNK_PASSWORD=password
-    ports:
-      - "8000:8000"
-    networks:
-      - mynetwork
+  # splunk:
+  #   image: splunk/splunk:8.0
+  #   hostname: splunk
+  #   environment:
+  #     - SPLUNK_START_ARGS=--accept-license
+  #     - SPLUNK_ENABLE_LISTEN=9997
+  #     - SPLUNK_PASSWORD=password
+  #   ports:
+  #     - "8000:8000"
+  #   networks:
+  #     - mynetwork
 
-  splunkforwarder:
-    image: splunk/universalforwarder:8.0
-    hostname: splunkforwarder
-    environment:
-      - SPLUNK_START_ARGS=--accept-license --answer-yes
-      - SPLUNK_STANDALONE_URL=splunk:9997
-      - SPLUNK_ADD=monitor /app/logs
-      - SPLUNK_PASSWORD=password
-    restart: always
-    depends_on:
-      splunk:
-        condition: service_healthy
-    volumes:
-      - shared-logs:/app/logs
-    networks:
-      - mynetwork
+  # splunkforwarder:
+  #   image: splunk/universalforwarder:8.0
+  #   hostname: splunkforwarder
+  #   environment:
+  #     - SPLUNK_START_ARGS=--accept-license --answer-yes
+  #     - SPLUNK_STANDALONE_URL=splunk:9997
+  #     - SPLUNK_ADD=monitor /app/logs
+  #     # - SPLUNK_ADD_INDEX=logs_data
+  #     - SPLUNK_PASSWORD=password
+  #   restart: always
+  #   depends_on:
+  #     splunk:
+  #       condition: service_healthy
+  #   volumes:
+  #     # - ./inputs.conf:/opt/splunkforwarder/etc/system/local/inputs.conf:ro
+  #     - shared-logs:/app/logs
+  #   networks:
+  #     - mynetwork
 
-  telegraf:
-    image: telegraf:1.8
-    container_name: telegraf
-    volumes:
-      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-    depends_on:
-      - splunk
-    networks:
-      - mynetwork
+  # telegraf:
+  #   image: telegraf:1.8
+  #   container_name: telegraf
+  #   volumes:
+  #     - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   depends_on:
+  #     - splunk
+  #   networks:
+  #     - mynetwork
 
 networks:
   mynetwork:
