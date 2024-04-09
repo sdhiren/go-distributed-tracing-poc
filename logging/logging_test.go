@@ -1,23 +1,20 @@
 package logging
 
 import (
-	"context"
 	"net/http/httptest"
 	"os"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
+
+	// "github.com/stretchr/testify/mock"
+
+	// "github.com/stretchr/testify/suite"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/exp/slog"
 )
 
-type customLoggerTestSuite struct{
-	suite.Suite
-	context context.Context
-
-}
 
 func TestGetDefaultLogger_ValidContext(t *testing.T) {
 	// Mock Gin context
@@ -44,10 +41,49 @@ func TestGetDefaultLogger_ValidContext(t *testing.T) {
 	expectedLogger := NewCustomLogger(slogLogger, context)						  
 							  
 	logger := GetDefaultLogger(context)
+
 	assert.Equal(t, expectedLogger, logger)
 	assert.NotNil(t, logger)
 	assert.NotNil(t, logger.logger)
+}
 
+func Test_Info_ValidContext(t *testing.T) {
+	// Mock Gin context
+	context, _ := gin.CreateTestContext(httptest.NewRecorder())
+	context.Request = httptest.NewRequest("GET", "/", nil)
+							  
+	logger := GetDefaultLogger(context)
+
+	logger.Info("message")
+
+	assert.NotNil(t, logger)
+	assert.NotNil(t, logger.logger)
+}
+
+func Test_Error_ValidContext(t *testing.T) {
+	// Mock Gin context
+	context, _ := gin.CreateTestContext(httptest.NewRecorder())
+	context.Request = httptest.NewRequest("GET", "/", nil)
+							  
+	logger := GetDefaultLogger(context)
+
+	logger.Error("message")
+
+	assert.NotNil(t, logger)
+	assert.NotNil(t, logger.logger)
+}
+
+func Test_With_ValidContext(t *testing.T) {
+	// Mock Gin context
+	context, _ := gin.CreateTestContext(httptest.NewRecorder())
+	context.Request = httptest.NewRequest("GET", "/", nil)
+							  
+	logger := GetDefaultLogger(context)
+
+	logger.With("key", "value")
+
+	assert.NotNil(t, logger)
+	assert.NotNil(t, logger.logger)
 }
 
 func TestGetDefaultLogger_NilContext(t *testing.T) {
